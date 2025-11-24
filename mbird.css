@@ -5,9 +5,8 @@ body{
 
 #board {
    /* background-color: skyblue;*/
-   width: 360px;
-   height: 640px;
-   background-image:url("./flappy.png");
+  
+   background-image:url("images/flappy.png");
    background-size: cover;
 
 }
