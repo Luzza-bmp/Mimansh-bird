@@ -8,6 +8,6 @@ body{
    width: 360px;
    height: 640px;
    background-image:url("./flappy.png");
-    background-size: cover;
+   background-size: cover;
 
 }
