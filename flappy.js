@@ -6,7 +6,7 @@ let context;
 
 //mimansh
 let mimanshwidth = 80;
-let mimanshheight = 60;
+let mimanshheight = 46;
 let mimanshx = boardwidth / 8;
 let mimanshy = boardheight / 2;
 let mimanshimg;
@@ -22,7 +22,7 @@ let mimansh={
 //pipes
 let pipearray = [];
 let pipewidth = 120;
-let pipeheight = 230;
+let pipeheight = 330;
 let pipex = boardwidth;
 let pipey = 0;
 
@@ -75,24 +75,60 @@ window.onload = function() {
     context.drawImage(mimanshimg, mimansh.x, mimansh.y, mimansh.width, mimansh.height);
 
     //pipes
-    for (let i = 0; i < pipearray.length; i++) {
-        let pipe = pipearray[i];
-        pipe.x += velocityx;
-        context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+   // inside update()
+for (let i = pipearray.length - 1; i >= 0; i--) {
+    let pipe = pipearray[i];
+    pipe.x += velocityx;
+
+    // draw the pipe image stretched to the computed height
+    // (top pipe y is 0, bottom pipe y is its computed y)
+    context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+
+    // remove pipes that are completely off-screen (optional but recommended)
+    if (pipe.x + pipe.width < 0) {
+        pipearray.splice(i, 1);
     }
+}
+
  }
 
 function placepipe() {
+    // size of the gap between top and bottom pipes
+    let openingspace = Math.floor(boardheight / 4); // change to taste
 
+    // safe margins so pipes are not flush against edges (optional)
+    let marginTop = 30;
+    let marginBottom = 30;
+
+    // gapY is the y coordinate (distance from top) where the gap starts
+    // choose it so the gap is fully on screen and leaves margins
+    let minGapY = marginTop;
+    let maxGapY = boardheight - openingspace - marginBottom;
+    let gapY = Math.floor(minGapY + Math.random() * (maxGapY - minGapY + 1));
+
+    // TOP pipe: anchored at the top (y = 0), height = gapY
+    let topPipeHeight = gapY;
     let toppipe = {
-        img : toppipeimg,
-        x : pipex,
-        y : pipey,
-        width : pipewidth,
-        height : pipeheight,
-        passed : false //to see if the flappy bird has passed the pipe
-
-    }
+        img: toppipeimg,
+        x: pipex,
+        y: 0,                 // always start at top edge
+        width: pipewidth,
+        height: topPipeHeight,
+        passed: false
+    };
     pipearray.push(toppipe);
 
+    // BOTTOM pipe: anchored at gapY + openingspace, height = remaining space
+    let bottomY = gapY + openingspace;
+    let bottomPipeHeight = boardheight - bottomY;
+    let bottompipe = {
+        img: bottompipeimg,
+        x: pipex,
+        y: bottomY,
+        width: pipewidth,
+        height: bottomPipeHeight,
+        passed: false
+    };
+    pipearray.push(bottompipe);
 }
+
