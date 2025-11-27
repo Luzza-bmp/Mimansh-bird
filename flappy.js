@@ -104,7 +104,7 @@ for (let i = pipearray.length - 1; i >= 0; i--) {
     context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
     if (!pipe.passed && pipe.x + pipe.width < mimansh.x) {
-        score++;
+        score += 0.5; // each pair of pipes gives 1 point (0.5 for top, 0.5 for bottom)
         pipe.passed = true;
     }
 
