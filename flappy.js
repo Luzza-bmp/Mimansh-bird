@@ -132,6 +132,12 @@ for (let i = pipearray.length - 1; i >= 0; i--) {
         context.font = "45px sans-serif";
         context.fillText(score, 5, 45);
 
+        if (gameover) {
+            context.fillText = "red";
+            context.font = "60px sans-serif";
+            context.fillText("Game Over", boardwidth / 4, boardheight / 2);
+        }
+
  }
 
 function placepipe() {
@@ -182,6 +188,15 @@ function movebird(e) {
     if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
         //move mimansh up
         velocityy = -6; // jump speed
+
+        //restart if game over
+        if (gameover) {
+            mimansh.y = mimanshy;
+            pipearray = [];
+            score = 0;
+            velocityy = 0;
+            gameover = false;
+        }
        
     }   
 }
