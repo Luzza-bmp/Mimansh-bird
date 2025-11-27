@@ -32,7 +32,8 @@ let bottompipeimg;
 
 //physics
 let velocityx = -2; //pipe moving left
-
+let velocityy = 0;//bird jump speed
+let gravity = 0.4; //bird falling speed
 
 
 
@@ -64,6 +65,7 @@ window.onload = function() {
    
     requestAnimationFrame(update);
     setInterval(placepipe, 1500);//every 1.5 seconds
+    this.document.addventListener("keydown", movebird);
 
 }
 
@@ -72,6 +74,9 @@ window.onload = function() {
     context.clearRect(0, 0, boardwidth, boardheight);
     
     //mimansh bird
+    velocityy += gravity;
+    /*mimansh.y += velocityy;*/
+    mimansh.y = Math.max(Math.min(mimansh.y + velocityy, boardheight - mimansh.height), 0);
     context.drawImage(mimanshimg, mimansh.x, mimansh.y, mimansh.width, mimansh.height);
 
     //pipes
@@ -132,3 +137,23 @@ function placepipe() {
     pipearray.push(bottompipe);
 }
 
+function movebird(e) {
+    if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
+        //move mimansh up
+        velocityy = -6; // jump speed
+       
+    }   
+}
+
+
+function detectcollision(a,b) {
+    if (a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y) {
+            return true;
+        }
+
+
+
+}
