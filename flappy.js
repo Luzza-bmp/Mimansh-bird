@@ -36,6 +36,9 @@ let velocityy = 0;//bird jump speed
 let gravity = 0.4; //bird falling speed
 
 
+let gameover = false;
+
+
 
 window.onload = function() {
     board = document.getElementById("board");
@@ -71,6 +74,9 @@ window.onload = function() {
 
  function update() {
     requestAnimationFrame(update);
+    if (gameover) {
+        return;
+    }
     context.clearRect(0, 0, boardwidth, boardheight);
     
     //mimansh bird
@@ -89,6 +95,11 @@ for (let i = pipearray.length - 1; i >= 0; i--) {
     // (top pipe y is 0, bottom pipe y is its computed y)
     context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
+
+    if (detectcollision(mimansh, pipe)) {
+        gameover = true;
+    }
+
     // remove pipes that are completely off-screen (optional but recommended)
     if (pipe.x + pipe.width < 0) {
         pipearray.splice(i, 1);
@@ -98,6 +109,10 @@ for (let i = pipearray.length - 1; i >= 0; i--) {
  }
 
 function placepipe() {
+
+    if (gameover) {
+        return;
+    }
     // size of the gap between top and bottom pipes
     let openingspace = Math.floor(boardheight / 4); // change to taste
 
@@ -147,13 +162,13 @@ function movebird(e) {
 
 
 function detectcollision(a,b) {
-    if (a.x < b.x + b.width &&
+    return (a.x < b.x + b.width &&
         a.x + a.width > b.x &&
         a.y < b.y + b.height &&
-        a.y + a.height > b.y) {
-            return true;
+        a.y + a.height > b.y) 
+            
         }
 
 
 
-}
+
