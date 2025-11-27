@@ -37,6 +37,7 @@ let gravity = 0.4; //bird falling speed
 
 
 let gameover = false;
+let score = 0;
 
 
 
@@ -85,6 +86,13 @@ window.onload = function() {
     mimansh.y = Math.max(Math.min(mimansh.y + velocityy, boardheight - mimansh.height), 0);
     context.drawImage(mimanshimg, mimansh.x, mimansh.y, mimansh.width, mimansh.height);
 
+
+
+    if (mimansh.y + mimansh.height >= boardheight) {
+        gameover = true;
+    }
+    
+    
     //pipes
    // inside update()
 for (let i = pipearray.length - 1; i >= 0; i--) {
@@ -94,6 +102,11 @@ for (let i = pipearray.length - 1; i >= 0; i--) {
     // draw the pipe image stretched to the computed height
     // (top pipe y is 0, bottom pipe y is its computed y)
     context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+
+    if (!pipe.passed && pipe.x + pipe.width < mimansh.x) {
+        score++;
+        pipe.passed = true;
+    }
 
 
     if (detectcollision(mimansh, pipe)) {
@@ -105,6 +118,12 @@ for (let i = pipearray.length - 1; i >= 0; i--) {
         pipearray.splice(i, 1);
     }
 }
+
+
+        //score
+        context.fillStyle = "white";
+        context.font = "45px sans-serif";
+        context.fillText(score, 5, 45);
 
  }
 
