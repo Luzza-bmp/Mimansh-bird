@@ -1,2 +1,2 @@
 # Mimansh-bird
-This js project contains of flappy bird game instead there will be Mimansh face and it will produces sound when the user loses.
+This js project contains of flappy bird game instead there will be Mimansh's face and it will produces sound when the user loses.
