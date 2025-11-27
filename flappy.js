@@ -119,6 +119,13 @@ for (let i = pipearray.length - 1; i >= 0; i--) {
     }
 }
 
+        // clear pipes
+        while (pipearray.length > 0 && pipearray[0].x - pipewidth ) {
+            pipearray.shift(); // remove off-screen pipes
+        }
+
+      
+      
 
         //score
         context.fillStyle = "white";
