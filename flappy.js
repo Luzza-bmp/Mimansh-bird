@@ -11,7 +11,6 @@ let mimanshx = boardwidth / 8;
 let mimanshy = boardheight / 2;
 let mimanshimg;
 
-
 let mimansh = {
     x: mimanshx,
     y: mimanshy,
@@ -21,86 +20,109 @@ let mimansh = {
 
 //pipes
 let pipearray = [];
-let pipewidth = 120;
+let pipewidth = 64;
 let pipeheight = 330;
 let pipex = boardwidth;
-let pipey = 0;
 
 let toppipeimg;
 let bottompipeimg;
 
-
 //physics
-let velocityx = -2; //pipe moving left
-let velocityy = 0;//bird jump speed
-let gravity = 0.4; //bird falling speed
-
+let velocityx = -2;
+let velocityy = 0;
+let gravity = 0.2;
 
 let gameover = false;
 let score = 0;
+let gameStarted = false;
 
-
+let pipeInterval;
 
 window.onload = function() {
     board = document.getElementById("board");
     board.width = boardwidth;
     board.height = boardheight;
-    context = board.getContext("2d"); // used for drawing on the board
+    context = board.getContext("2d");
 
     //load images
     mimanshimg = new Image();
     mimanshimg.src = "./images/mimansh.png";
-    mimanshimg.onload = function() {
-        context.drawImage(mimanshimg, mimansh.x, mimansh.y, mimansh.width, mimansh.height);
-    }
     
     toppipeimg = new Image();
-    toppipeimg.src = "./images/toppillar.png";
-   
+    toppipeimg.src = "./images/toppillar.png"; // Separate top pillar image
+    
     bottompipeimg = new Image();
-    bottompipeimg.src = "./images/bottompillar.png";
-   
+    bottompipeimg.src = "./images/bottompillar.png"; // Separate bottom pillar image
+
     requestAnimationFrame(update);
-    setInterval(placepipe, 1500); //every 1.5 seconds
-    document.addEventListener("keydown", movebird); // FIXED: was addventListener
+    document.addEventListener("keydown", movebird);
 }
 
 function update() {
     requestAnimationFrame(update);
-    if (gameover) {
-        return;
-    }
     context.clearRect(0, 0, boardwidth, boardheight);
     
-    //mimansh bird
-    velocityy += gravity;
-    mimansh.y = Math.max(Math.min(mimansh.y + velocityy, boardheight - mimansh.height), 0);
-    context.drawImage(mimanshimg, mimansh.x, mimansh.y, mimansh.width, mimansh.height);
+    if (gameover) {
+        // Draw everything first, then show game over screen
+        drawGameElements();
+        
+        context.fillStyle = "white";
+        context.font = "40px sans-serif";
+        context.fillText("GAME OVER", boardwidth/6, boardheight/2);
+        
+        
+        return;
+    }
+    
+    if (gameStarted) {
+        velocityy += gravity;
+        mimansh.y += velocityy;
+    }
+    
+    // Keep bird within screen bounds
+    if (mimansh.y < 0) {
+        mimansh.y = 0;
+        velocityy = 0;
+    }
+    
+    drawGameElements();
 
+    // Game over if bird hits bottom
     if (mimansh.y + mimansh.height >= boardheight) {
         gameover = true;
     }
     
-    //pipes
-    for (let i = pipearray.length - 1; i >= 0; i--) {
-        let pipe = pipearray[i];
-        pipe.x += velocityx;
+    
+}
 
-        // draw the pipe image stretched to the computed height
-        context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
+function drawGameElements() {
+    // Draw mimansh
+    context.drawImage(mimanshimg, mimansh.x, mimansh.y, mimansh.width, mimansh.height);
+    
+    // Draw pipes
+    if (gameStarted) {
+        for (let i = pipearray.length - 1; i >= 0; i--) {
+            let pipe = pipearray[i];
+            pipe.x += velocityx;
 
-        if (!pipe.passed && pipe.x + pipe.width < mimansh.x) {
-            score += 0.5; // each pair of pipes gives 1 point (0.5 for top, 0.5 for bottom)
-            pipe.passed = true;
-        }
+            // FIXED: Simple drawing - no flipping needed since you have separate images
+            context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
-        if (detectcollision(mimansh, pipe)) {
-            gameover = true;
-        }
+            // Score counting
+            if (!pipe.passed && pipe.x + pipe.width < mimansh.x) {
+                score += 0.5;
+                pipe.passed = true;
+            }
 
-        // remove pipes that are completely off-screen
-        if (pipe.x + pipe.width < 0) {
-            pipearray.splice(i, 1);
+            // Collision detection
+            if (detectcollision(mimansh, pipe)) {
+                gameover = true;
+            }
+
+            // Remove off-screen pipes
+            if (pipe.x + pipe.width < 0) {
+                pipearray.splice(i, 1);
+            }
         }
     }
 
@@ -108,76 +130,96 @@ function update() {
     context.fillStyle = "white";
     context.font = "45px sans-serif";
     context.fillText(score, 5, 45);
-
-    if (gameover) {
-        context.fillStyle = "red"; // FIXED: was context.fillText = "red"
-        context.font = "60px sans-serif";
-        context.fillText("Game Over", boardwidth / 4, boardheight / 2);
-    }
 }
 
 function placepipe() {
-    if (gameover) {
+    if (gameover || !gameStarted) {
         return;
     }
     
-    // size of the gap between top and bottom pipes
-    let openingspace = Math.floor(boardheight / 4);
-
-    // safe margins so pipes are not flush against edges
-    let marginTop = 30;
-    let marginBottom = 30;
-
-    // gapY is the y coordinate where the gap starts
-    let minGapY = marginTop;
-    let maxGapY = boardheight - openingspace - marginBottom;
-    let gapY = Math.floor(minGapY + Math.random() * (maxGapY - minGapY + 1));
-
-    // TOP pipe: anchored at the top (y = 0), height = gapY
-    let topPipeHeight = gapY;
+    let openingSpace = boardheight / 3;
+    
+    // Calculate random position for the gap
+    let minGapY = 100;
+    let maxGapY = boardheight - openingSpace - 100;
+    let gapY = minGapY + Math.random() * (maxGapY - minGapY);
+    
+    // FIXED: Use the actual top pillar image (no flipping needed)
     let toppipe = {
-        img: toppipeimg,
+        img: toppipeimg, // This should be your pre-made top pillar image
         x: pipex,
-        y: 0,
+        y: gapY - pipeheight, // Top pipe hangs down from above
         width: pipewidth,
-        height: topPipeHeight,
+        height: pipeheight,
+        top: true,
         passed: false
     };
-    pipearray.push(toppipe);
 
-    // BOTTOM pipe: anchored at gapY + openingspace
-    let bottomY = gapY + openingspace;
-    let bottomPipeHeight = boardheight - bottomY;
+    // Bottom pipe
     let bottompipe = {
-        img: bottompipeimg,
+        img: bottompipeimg, // This should be your pre-made bottom pillar image
         x: pipex,
-        y: bottomY,
+        y: gapY + openingSpace, // Bottom pipe grows up from below
         width: pipewidth,
-        height: bottomPipeHeight,
+        height: pipeheight,
+        top: false,
         passed: false
     };
+
+    pipearray.push(toppipe);
     pipearray.push(bottompipe);
 }
 
 function movebird(e) {
     if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
-        //move mimansh up
-        velocityy = -6; // jump speed
-
-        //restart if game over
+        // If game is over, restart first
         if (gameover) {
-            mimansh.y = mimanshy;
-            pipearray = [];
-            score = 0;
-            velocityy = 0;
-            gameover = false;
+            restartGame();
+            return;
+        }
+        
+        if (!gameStarted && !gameover) {
+            startGame();
+            velocityy = -6;
+            return;
+        }
+        
+        if (gameStarted) {
+            velocityy = -6;
         }
     }   
 }
 
+function startGame() {
+    gameStarted = true;
+    pipeInterval = setInterval(placepipe, 1500);
+}
+
+function restartGame() {
+    // Clear existing interval
+    if (pipeInterval) {
+        clearInterval(pipeInterval);
+    }
+    
+    // Reset everything
+    mimansh.y = mimanshy;
+    pipearray = [];
+    score = 0;
+    gameover = false;
+    gameStarted = false;
+    velocityy = 0;
+    
+    // Clear any existing interval
+    clearInterval(pipeInterval);
+    
+    // Start fresh
+    startGame();
+    velocityy = -6; // Give initial jump
+}
+
 function detectcollision(a, b) {
-    return (a.x < b.x + b.width &&
-        a.x + a.width > b.x &&
-        a.y < b.y + b.height &&
-        a.y + a.height > b.y);
+    return a.x < b.x + b.width &&
+           a.y < b.y + b.height &&
+           a.x + a.width > b.x &&
+           a.y + a.height > b.y;
 }
