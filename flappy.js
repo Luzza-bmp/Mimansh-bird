@@ -40,12 +40,15 @@ let pipeInterval;
 
 //sound variable 
 let gameoversound;
+let flappy;
+let madarchu2;
 
 window.onload = function() {
 
     //load sounds
     gameoversound = document.getElementById("gameoversound");
-
+    flappy = document.getElementById("flappy");
+    madarchu2 = document.getElementById("madarchu2");
 
 
     board = document.getElementById("board");
@@ -58,13 +61,20 @@ window.onload = function() {
     mimanshimg.src = "./images/mimansh.png";
     
     toppipeimg = new Image();
-    toppipeimg.src = "./images/toppillar.png"; // Separate top pillar image
+    toppipeimg.src = "./images/toppillar.png";
     
     bottompipeimg = new Image();
-    bottompipeimg.src = "./images/bottompillar.png"; // Separate bottom pillar image
+    bottompipeimg.src = "./images/bottompillar.png";
 
     requestAnimationFrame(update);
+    
+    // FIXED: Add event listener to document instead of just board
     document.addEventListener("keydown", movebird);
+    
+    // Also add click listener to canvas for mobile/mouse support
+    board.addEventListener("click", function() {
+        movebird({code: "Space"});
+    });
 }
 
 function update() {
@@ -72,13 +82,11 @@ function update() {
     context.clearRect(0, 0, boardwidth, boardheight);
     
     if (gameover) {
-        // Draw everything first, then show game over screen
         drawGameElements();
         
         context.fillStyle = "white";
         context.font = "40px sans-serif";
         context.fillText("GAME OVER", boardwidth/6, boardheight/2);
-        
         
         return;
     }
@@ -100,8 +108,6 @@ function update() {
     if (mimansh.y + mimansh.height >= boardheight) {
         setgameover();
     }
-    
-    
 }
 
 function drawGameElements() {
@@ -116,25 +122,31 @@ function drawGameElements() {
         context.textAlign = "left";
     }
     
-    
-    
     // Draw pipes
     if (gameStarted) {
         for (let i = pipearray.length - 1; i >= 0; i--) {
             let pipe = pipearray[i];
             
-
             if (!gameover){
                 pipe.x += velocityx;
             }
 
-            // FIXED: Simple drawing - no flipping needed since you have separate images
             context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
-            // Score counting
+            // FIXED: Score counting with flappy sound
             if (!pipe.passed && pipe.x + pipe.width < mimansh.x) {
-                score += 0.5;
                 pipe.passed = true;
+                score += 0.5;
+                
+                // Play flappy sound when scoring a full point (every 2 pipes = 1 point)
+                if (Math.floor(score) > Math.floor(score - 0.5)) {
+                    try {
+                        flappy.currentTime = 0;
+                        flappy.play().catch(e => console.log("Audio play failed:", e));
+                    } catch(e) {
+                        console.log("Audio error:", e);
+                    }
+                }
             }
 
             // Collision detection
@@ -162,27 +174,24 @@ function placepipe() {
     
     let openingSpace = boardheight / 3;
     
-    // Calculate random position for the gap
     let minGapY = 100;
     let maxGapY = boardheight - openingSpace - 100;
     let gapY = minGapY + Math.random() * (maxGapY - minGapY);
     
-    // FIXED: Use the actual top pillar image (no flipping needed)
     let toppipe = {
-        img: toppipeimg, // This should be your pre-made top pillar image
+        img: toppipeimg,
         x: pipex,
-        y: gapY - pipeheight, // Top pipe hangs down from above
+        y: gapY - pipeheight,
         width: pipewidth,
         height: pipeheight,
         top: true,
         passed: false
     };
 
-    // Bottom pipe
     let bottompipe = {
-        img: bottompipeimg, // This should be your pre-made bottom pillar image
+        img: bottompipeimg,
         x: pipex,
-        y: gapY + openingSpace, // Bottom pipe grows up from below
+        y: gapY + openingSpace,
         width: pipewidth,
         height: pipeheight,
         top: false,
@@ -195,18 +204,22 @@ function placepipe() {
 
 function movebird(e) {
     if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
-        // If game is over, restart first
+        
+        // If game is over, restart
         if (gameover) {
             restartGame();
+            velocityy = -6; 
             return;
         }
         
+        // FIXED: Start game on first keypress
         if (!gameStarted && !gameover) {
             startGame();
             velocityy = -6;
             return;
         }
         
+        // Jump during game
         if (gameStarted) {
             velocityy = -6;
         }
@@ -216,6 +229,7 @@ function movebird(e) {
 function startGame() {
     gameStarted = true;
     pipeInterval = setInterval(placepipe, 1500);
+    // FIXED: No sound at initial start
 }
 
 function restartGame() {
@@ -235,13 +249,22 @@ function restartGame() {
     //reseting the sound
     gameoversound.pause();
     gameoversound.currentTime = 0;
+    flappy.pause();
+    flappy.currentTime = 0;
+    madarchu2.pause();
+    madarchu2.currentTime = 0;
     
-    // Clear any existing interval
-    clearInterval(pipeInterval);
+    // Start the game immediately after resetting
+    gameStarted = true;
+    pipeInterval = setInterval(placepipe, 1500);
     
-    // Start fresh
-    startGame();
-    velocityy = -6; // Give initial jump
+    // FIXED: Play madarchu2 sound ONLY on restart (not initial start)
+    try {
+        madarchu2.currentTime = 0;
+        madarchu2.play().catch(e => console.log("Audio play failed:", e));
+    } catch(e) {
+        console.log("Audio error:", e);
+    }
 }
 
 function detectcollision(a, b) {
@@ -250,7 +273,6 @@ function detectcollision(a, b) {
            a.x + a.width > b.x &&
            a.y + a.height > b.y;
 }
-
 
 function setgameover() {
     if (!gameover) {
