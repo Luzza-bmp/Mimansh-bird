@@ -99,6 +99,15 @@ function drawGameElements() {
     // Draw mimansh
     context.drawImage(mimanshimg, mimansh.x, mimansh.y, mimansh.width, mimansh.height);
     
+    if (!gameStarted && !gameover) {
+        context.fillStyle = "white";
+        context.font = "30px sans-serif";
+        context.fillText("Press Space, X or arrow key to START", boardwidth/2, boardheight/2);
+        context.textAlign = "center";
+    }
+    
+    
+    
     // Draw pipes
     if (gameStarted) {
         for (let i = pipearray.length - 1; i >= 0; i--) {
