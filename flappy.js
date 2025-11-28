@@ -201,8 +201,6 @@ function placepipe() {
 function movebird(e) {
     if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
         
-        // REMOVED: flappy sound from key press - now it only plays when scoring
-        
         // If game is over, restart
         if (gameover) {
             restartGame();
@@ -228,13 +226,8 @@ function startGame() {
     gameStarted = true;
     pipeInterval = setInterval(placepipe, 1500);
     
-    // Play madarchu2 sound when game starts
-    try {
-        madarchu2.currentTime = 0;
-        madarchu2.play().catch(e => console.log("Madarchu2 play failed:", e));
-    } catch(e) {
-        console.log("Madarchu2 error:", e);
-    }
+    // REMOVED: madarchu2 sound from startGame()
+    // Now it only plays in restartGame() after game over
 }
 
 function restartGame() {
@@ -262,6 +255,14 @@ function restartGame() {
     // Start the game
     startGame();
     velocityy = -6;
+    
+    // Play madarchu2 sound ONLY after game over (on restart)
+    try {
+        madarchu2.currentTime = 0;
+        madarchu2.play().catch(e => console.log("Madarchu2 play failed:", e));
+    } catch(e) {
+        console.log("Madarchu2 error:", e);
+    }
 }
 
 function detectcollision(a, b) {
