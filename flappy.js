@@ -98,7 +98,7 @@ function update() {
 
     // Game over if bird hits bottom
     if (mimansh.y + mimansh.height >= boardheight) {
-        gameover = true;
+        setgameover();
     }
     
     
@@ -135,7 +135,7 @@ function drawGameElements() {
 
             // Collision detection
             if (detectcollision(mimansh, pipe)) {
-                gameover = true;
+                setgameover();
             }
 
             // Remove off-screen pipes
@@ -227,6 +227,10 @@ function restartGame() {
     gameover = false;
     gameStarted = false;
     velocityy = 0;
+
+    //reseting the sound
+    gameoversound.pause();
+    gameoversound.currentTime = 0;
     
     // Clear any existing interval
     clearInterval(pipeInterval);
@@ -241,4 +245,12 @@ function detectcollision(a, b) {
            a.y < b.y + b.height &&
            a.x + a.width > b.x &&
            a.y + a.height > b.y;
+}
+
+
+function setgameover() {
+    if (!gameover) {
+        gameover = true;
+        gameoversound.play();
+    }
 }
