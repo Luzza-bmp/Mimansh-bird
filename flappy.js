@@ -101,9 +101,10 @@ function drawGameElements() {
     
     if (!gameStarted && !gameover) {
         context.fillStyle = "white";
-        context.font = "30px sans-serif";
-        context.fillText("Press Space, X or arrow key to START", boardwidth/2, boardheight/2);
+        context.font = "20px sans-serif";
         context.textAlign = "center";
+        context.fillText("Press Space, X or arrow key to START", boardwidth/2, boardheight/3);
+        context.textAlign = "left";
     }
     
     
