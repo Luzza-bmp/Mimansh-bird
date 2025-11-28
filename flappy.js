@@ -38,7 +38,16 @@ let gameStarted = false;
 
 let pipeInterval;
 
+//sound variable 
+let gameoversound;
+
 window.onload = function() {
+
+    //load sounds
+    gameoversound = document.getElementById("gameoversound");
+
+
+
     board = document.getElementById("board");
     board.width = boardwidth;
     board.height = boardheight;
