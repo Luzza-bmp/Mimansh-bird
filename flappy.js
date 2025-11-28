@@ -122,7 +122,11 @@ function drawGameElements() {
     if (gameStarted) {
         for (let i = pipearray.length - 1; i >= 0; i--) {
             let pipe = pipearray[i];
-            pipe.x += velocityx;
+            
+
+            if (!gameover){
+                pipe.x += velocityx;
+            }
 
             // FIXED: Simple drawing - no flipping needed since you have separate images
             context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
