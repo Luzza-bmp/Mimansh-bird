@@ -68,10 +68,8 @@ window.onload = function() {
 
     requestAnimationFrame(update);
     
-    // FIXED: Add event listener to document instead of just board
     document.addEventListener("keydown", movebird);
     
-    // Also add click listener to canvas for mobile/mouse support
     board.addEventListener("click", function() {
         movebird({code: "Space"});
     });
@@ -133,19 +131,17 @@ function drawGameElements() {
 
             context.drawImage(pipe.img, pipe.x, pipe.y, pipe.width, pipe.height);
 
-            // FIXED: Score counting with flappy sound
+            // Score counting - PLAY FLAPPY SOUND ONLY WHEN SCORING
             if (!pipe.passed && pipe.x + pipe.width < mimansh.x) {
-                pipe.passed = true;
                 score += 0.5;
+                pipe.passed = true;
                 
-                // Play flappy sound when scoring a full point (every 2 pipes = 1 point)
-                if (Math.floor(score) > Math.floor(score - 0.5)) {
-                    try {
-                        flappy.currentTime = 0;
-                        flappy.play().catch(e => console.log("Audio play failed:", e));
-                    } catch(e) {
-                        console.log("Audio error:", e);
-                    }
+                // Play flappy sound when scoring
+                try {
+                    flappy.currentTime = 0;
+                    flappy.play().catch(e => console.log("Audio play failed:", e));
+                } catch(e) {
+                    console.log("Audio error:", e);
                 }
             }
 
@@ -205,14 +201,16 @@ function placepipe() {
 function movebird(e) {
     if (e.code == "Space" || e.code == "ArrowUp" || e.code == "KeyX") {
         
+        // REMOVED: flappy sound from key press - now it only plays when scoring
+        
         // If game is over, restart
         if (gameover) {
             restartGame();
-            velocityy = -6; 
+            velocityy = -6;
             return;
         }
         
-        // FIXED: Start game on first keypress
+        // Start game on first keypress
         if (!gameStarted && !gameover) {
             startGame();
             velocityy = -6;
@@ -229,7 +227,14 @@ function movebird(e) {
 function startGame() {
     gameStarted = true;
     pipeInterval = setInterval(placepipe, 1500);
-    // FIXED: No sound at initial start
+    
+    // Play madarchu2 sound when game starts
+    try {
+        madarchu2.currentTime = 0;
+        madarchu2.play().catch(e => console.log("Madarchu2 play failed:", e));
+    } catch(e) {
+        console.log("Madarchu2 error:", e);
+    }
 }
 
 function restartGame() {
@@ -254,17 +259,9 @@ function restartGame() {
     madarchu2.pause();
     madarchu2.currentTime = 0;
     
-    // Start the game immediately after resetting
-    gameStarted = true;
-    pipeInterval = setInterval(placepipe, 1500);
-    
-    // FIXED: Play madarchu2 sound ONLY on restart (not initial start)
-    try {
-        madarchu2.currentTime = 0;
-        madarchu2.play().catch(e => console.log("Audio play failed:", e));
-    } catch(e) {
-        console.log("Audio error:", e);
-    }
+    // Start the game
+    startGame();
+    velocityy = -6;
 }
 
 function detectcollision(a, b) {
@@ -277,6 +274,16 @@ function detectcollision(a, b) {
 function setgameover() {
     if (!gameover) {
         gameover = true;
-        gameoversound.play();
+        // Stop generating new pipes
+        if (pipeInterval) {
+            clearInterval(pipeInterval);
+        }
+        // Play game over sound
+        try {
+            gameoversound.currentTime = 0;
+            gameoversound.play().catch(e => console.log("Game over sound play failed:", e));
+        } catch(e) {
+            console.log("Game over sound error:", e);
+        }
     }
 }
